@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Archer Love Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .score-board {
+      margin: 10px 0;
+      font-size: 20px;
+      color: yellow;
+    }
+
+    svg {
+      width: 100vw;
+      height: 60vh;
+      display: block;
+      background: #111;
+    }
+
+    .letter {
+      font-size: 48px;
+      fill: #ff4d4d;
+      cursor: pointer;
+      transition: transform 1s ease-out, opacity 1s ease-out;
+    }
+
+    .fall {
+      transform: translateY(100px);
+      opacity: 0;
+    }
+
+    .arrow {
+      transition: all 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Archer Love</h1>
+<div class="score-board">
+  Score: <span id="scoreText">0</span> | High Score: <span id="highScoreText">0</span>
+</div>
+
+<svg id="gameArea">
+  <circle id="arrow" class="arrow" cx="50" cy="150" r="6" fill="aqua" />
+</svg>
+
+<script>
+  const svg = document.getElementById("gameArea");
+  const arrow = document.getElementById("arrow");
+  const scoreText = document.getElementById("scoreText");
+  const highScoreText = document.getElementById("highScoreText");
+
+  let score = 0;
+  let highScore = localStorage.getItem("fallingLetterHighScore") || 0;
+  highScoreText.textContent = highScore;
+
+  const word = "LOVEYOU";
+  let letters = [];
+
+  function spawnLetters() {
+    svg.querySelectorAll(".letter").forEach(l => l.remove());
+    letters = [];
+
+    for (let i = 0; i < word.length; i++) {
+      let x = 100 + i * 80;
+      let y = 100;
+
+      const letter = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      letter.setAttribute("x", x);
+      letter.setAttribute("y", y);
+      letter.textContent = word[i];
+      letter.classList.add("letter");
+      svg.appendChild(letter);
+
+      letter.addEventListener("click", () => shootArrowAt(letter));
+
+      letters.push(letter);
+    }
+  }
+
+  function shootArrowAt(letter) {
+    const x = parseFloat(letter.getAttribute("x"));
+    const y = parseFloat(letter.getAttribute("y"));
+
+    arrow.setAttribute("cx", x);
+    arrow.setAttribute("cy", y);
+
+    // Hit animation
+    letter.classList.add("fall");
+
+    setTimeout(() => {
+      letter.remove();
+      score += 100;
+      scoreText.textContent = score;
+
+      if (score > highScore) {
+        highScore = score;
+        highScoreText.textContent = highScore;
+        localStorage.setItem("fallingLetterHighScore", highScore);
+      }
+
+      // If all letters are removed, respawn
+      if (svg.querySelectorAll(".letter").length === 0) {
+        setTimeout(spawnLetters, 1000);
+      }
+    }, 400);
+
+    // Reset arrow
+    setTimeout(() => {
+      arrow.setAttribute("cx", 50);
+      arrow.setAttribute("cy", 150);
+    }, 400);
+  }
+
+  spawnLetters();
+</script>
+
+</body>
+</html>
